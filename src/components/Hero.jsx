@@ -1,9 +1,14 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/all";
-import React from "react";
+import { useRef } from "react";
+import { useMediaQuery } from "react-responsive";
 
 const Hero = () => {
+  const videoRef = useRef(null);
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+
   useGSAP(() => {
     const heroSplit = new SplitText(".title", { type: " chars,words" });
     const paragraphSplit = new SplitText(".subtitle", { type: " lines" });
@@ -11,7 +16,7 @@ const Hero = () => {
     heroSplit.chars.forEach((chars) => chars.classList.add("text-gradient"));
 
     gsap.from(heroSplit.chars, {
-      yPercent: 100,
+      yPercent: 80,
       duration: 1.8,
       ease: "expo.out",
       delay: 0.5,
@@ -38,12 +43,34 @@ const Hero = () => {
       })
       .to(".left-leaf", { y: 200 }, 0)
       .to(".right-leaf", { y: -200 }, 0);
+
+    const startvalue = isMobile ? "top 50%" : "top 60%";
+    const endvalue = isMobile ? "120% top%" : "bottom top";
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#video",
+        start: startvalue,
+        end: endvalue,
+        scrub: true,
+        pin: true,
+      },
+    });
+
+    videoRef.current.onloadedmetadata = () => {
+      tl.to(videoRef.current, {
+        currentTime: videoRef.current.duration,
+        ease: "none",
+      });
+    };
   }, []);
 
   return (
     <>
       <section id="hero" className="noisy">
-        <h1 className="title">Cocktail</h1>
+        <h1 className="title">
+          <span className="text-gradient">Cocktail</span>
+        </h1>
 
         <img
           src="/images/hero-left-leaf.png"
@@ -77,6 +104,16 @@ const Hero = () => {
           </div>
         </div>
       </section>
+
+      <div className=" video absolute inset-0">
+        <video
+          src="/videos/input.mp4"
+          muted
+          playsInline
+          preload="auto"
+          ref={videoRef}
+        />
+      </div>
     </>
   );
 };
